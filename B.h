@@ -33,7 +33,7 @@ private:
 public:
     void Insert(double key);
     //ind is the index of the child node
-    void Split(Node* root, int ind);
+    Node* Split(Node* root, int ind);
 };
 
 void BTree::Insert(double key){
@@ -134,6 +134,10 @@ void BTree::Insert(double key){
                     ind = i;
                 }
             }
+            //if a node along the path is found to be full, split it
+            if(curr->children[ind+1]->size == 5){
+                curr = Split(curr, ind+1);
+            }
             curr = curr->children[ind+1];
         }
         int ind = -1;
@@ -149,7 +153,10 @@ void BTree::Insert(double key){
             curr->children[ind+1]->keynodes.insert({key, curr->children[ind+1]});
         }
         else{
-            //if child node isn't full
+            //checks if child node is full, splits if it is
+            if(curr->children[ind+1]->size == 5){
+                curr = Split(curr, ind+1);
+            }
             if(curr->children[ind+1]->size != 5){
                 ind = -1;
                 for(int i = 0; i < curr->children[ind+1]->size; i++){
@@ -190,7 +197,7 @@ void BTree::Insert(double key){
     }
 }
 
-void BTree::Split(Node* root, int ind){
+Node* BTree::Split(Node* root, int ind){
     //this function only works under the assumption the parent node isn't full
     Node* newchild = new Node;
     //if parent node isn't full, then that means the "last" child node there is would be at index 4
@@ -262,5 +269,7 @@ void BTree::Split(Node* root, int ind){
             }
         }
         }
+    return root;
 
 }
+
