@@ -19,6 +19,9 @@ struct Node{
     Node(){
         /* add other constuctor information later */
         ifLeaf = true;
+        for(int i = 0; i < 6; i++){
+            children[i] = nullptr;
+        }
     }
     
 
@@ -68,8 +71,9 @@ void BTree::Insert(double key){
         newchild2->children[1] = child5;
         newchild2->children[2] = child6;
         
-        newchild1->ifLeaf = false;
-        newchild2->ifLeaf = false;
+        if(newchild1->children[0]->ifLeaf){
+            newchild1->ifLeaf = false;
+            newchild2->ifLeaf = false;}
         newroot->children[0] = newchild1;
         newroot->children[1] = newchild2;
         newroot->ifLeaf = false;
@@ -80,25 +84,34 @@ void BTree::Insert(double key){
     }
     //checks if root is leaf node and add keys
     if(root->ifLeaf){
-        int ind = 0;
+        int ind = -1;
         //finds index where key needs to be inserted
         for(int i = 0; i < root->size; i++){
             if(root->keys[i] < key){
-                ind = i;
+                ind = i+1;
             }
         }
         //if key needs to be inserted at end
         if(ind == root->size-1)
         {
-            root->keys[ind+1] = key;
+            root->keys[ind] = key;
+            Node* newnode = new Node;
+            root->keynodes.insert({key, newnode});
+            root->size = root->size+1;
+        }
+        else if(ind == -1){
+            for(int i = root->size-1; i >= 0; i--){
+                root->keys[i] = root->keys[i-1];
+            }
+            root->keys[0] = key;
             Node* newnode = new Node;
             root->keynodes.insert({key, newnode});
             root->size = root->size+1;
         }
         //if key needs to be inserted in middle or beginning
         else{
-            for(int i = root->size-1; i >= ind; i--){
-                root->keys[i+1] = root->keys[i];
+            for(int i = root->size-1; i >= ind+1; i--){
+                root->keys[i] = root->keys[i-1];
         }
             root->keys[ind] = key;
             Node* newnode = new Node;
@@ -111,5 +124,66 @@ void BTree::Insert(double key){
     else{
         //find where key belongs in key array, find corresponding child array [i+1]. ex. if key is lower than first element, it stays at 0 and if its higher than first element its 0+1, so it belongs at index 1 in child array.
         //split
+        Node* curr = root;
+        while(curr->children[0]->ifLeaf != true){
+            //traverses tree to find where key belongs
+            int ind = -1;
+            for(int i = 0; i < curr->size; i++){
+                if(curr->keys[i] < key){
+                    ind = i;
+                }
+            }
+            curr = curr->children[ind+1];
+        }
+        int ind = -1;
+        for(int i = 0; i < curr->size; i++){
+            if(curr->keys[i] < key){
+                ind = i;
+            }}
+        //checks if a child doesn't exist there yet
+        if(curr->children[ind+1] == nullptr){
+            curr->children[ind+1] = new Node;
+            curr->children[ind+1]->keys[0] = key;
+            curr->children[ind+1]->size = 1;
+            curr->children[ind+1]->keynodes.insert({key, curr->children[ind+1]});
+        }
+        else{
+            //if child node isn't full
+            if(curr->children[ind+1]->size != 5){
+                ind = -1;
+                for(int i = 0; i < curr->children[ind+1]->size; i++){
+                    if(curr->children[ind+1]->keys[i] < key){
+                        ind = i+1;
+                    }
+                }
+                if(ind == curr->children[ind+1]->size-1){
+                    Node* newnode = new Node;
+                    curr->children[ind+1]->keys[ind] = key;
+                    curr->children[ind+1]->size += 1;
+                    curr->children[ind+1]->keynodes.insert({key, newnode});
+                    //split this node since its full
+                }
+                else if(ind == -1){
+                    for(int i = curr->children[ind+1]->size-1; i >= 0; i--){
+                        curr->children[ind+1]->keys[i] = curr->children[ind+1]->keys[i-1];
+                    }
+                    curr->children[ind+1]->keys[0] = key;
+                    curr->children[ind+1]->size += 1;
+                    Node* newnode = new Node;
+                    curr->children[ind+1]->keynodes.insert({key, newnode});
+                }
+                else{
+                    for(int i = curr->children[ind+1]->size-1; i >= ind+1; i--){
+                        curr->children[ind+1]->keys[i] = curr->children[ind+1]->keys[i-1];
+                    }
+                    curr->children[ind+1]->keys[ind] = key;
+                    curr->children[ind+1]->size += 1;
+                    Node* newnode = new Node;
+                    curr->children[ind+1]->keynodes.insert({key, newnode});
+                }
+            }
+
+            
+        }
     }
 }
