@@ -32,7 +32,8 @@ private:
     Node* root;
 public:
     void Insert(double key);
-    void Split(Node* root);
+    //ind is the index of the child node
+    void Split(Node* root, int ind);
 };
 
 void BTree::Insert(double key){
@@ -100,7 +101,7 @@ void BTree::Insert(double key){
             root->size = root->size+1;
         }
         else if(ind == -1){
-            for(int i = root->size-1; i >= 0; i--){
+            for(int i = root->size; i > 0; i--){
                 root->keys[i] = root->keys[i-1];
             }
             root->keys[0] = key;
@@ -110,7 +111,7 @@ void BTree::Insert(double key){
         }
         //if key needs to be inserted in middle or beginning
         else{
-            for(int i = root->size-1; i >= ind+1; i--){
+            for(int i = root->size; i > ind; i--){
                 root->keys[i] = root->keys[i-1];
         }
             root->keys[ind] = key;
@@ -156,15 +157,16 @@ void BTree::Insert(double key){
                         ind = i+1;
                     }
                 }
+                //if it needs to be inserted at the last index
                 if(ind == curr->children[ind+1]->size-1){
                     Node* newnode = new Node;
                     curr->children[ind+1]->keys[ind] = key;
                     curr->children[ind+1]->size += 1;
                     curr->children[ind+1]->keynodes.insert({key, newnode});
-                    //split this node since its full
                 }
+                //if it needs to be inserted at the first index
                 else if(ind == -1){
-                    for(int i = curr->children[ind+1]->size-1; i >= 0; i--){
+                    for(int i = curr->children[ind+1]->size; i > 0; i--){
                         curr->children[ind+1]->keys[i] = curr->children[ind+1]->keys[i-1];
                     }
                     curr->children[ind+1]->keys[0] = key;
@@ -173,7 +175,7 @@ void BTree::Insert(double key){
                     curr->children[ind+1]->keynodes.insert({key, newnode});
                 }
                 else{
-                    for(int i = curr->children[ind+1]->size-1; i >= ind+1; i--){
+                    for(int i = curr->children[ind+1]->size; i > ind; i--){
                         curr->children[ind+1]->keys[i] = curr->children[ind+1]->keys[i-1];
                     }
                     curr->children[ind+1]->keys[ind] = key;
@@ -186,4 +188,79 @@ void BTree::Insert(double key){
             
         }
     }
+}
+
+void BTree::Split(Node* root, int ind){
+    //this function only works under the assumption the parent node isn't full
+    Node* newchild = new Node;
+    //if parent node isn't full, then that means the "last" child node there is would be at index 4
+    if(ind == 4){
+        double newkey = root->children[ind]->keys[2];
+        root->keys[4] = newkey;
+        root->keynodes.insert({newkey,root->children[ind]->keynodes[newkey]});
+        double key1 = root->children[ind]->keys[3];
+        double key2 = root->children[ind]->keys[4];
+        newchild->keys[0] = key1;
+        newchild->keys[1] = key2;
+        newchild->size = 2;
+        root->size += 1;
+        root->children[ind]->size = 2;
+        newchild->keynodes.insert({key1 ,root->children[ind]->keynodes[key1]});
+        newchild->keynodes.insert({key2 ,root->children[ind]->keynodes[key2]});
+        root->children[5] = newchild;
+        for(int i = 2; i < 5; i++){
+            //gets rid of nodes and keys in this child that have moved
+            root->children[ind]->keynodes.erase(root->children[ind]->keys[i]);
+            root->children[ind]->keys[i] = 0;
+        }
+        if(root->children[0]->ifLeaf == false){
+            //transfer children of split array
+            root->children[5]->ifLeaf = false;
+            int j = 0;
+            for(int i = 3; i < 6; i++){
+                root->children[5]->children[j] = root->children[ind]->children[i];
+                root->children[ind]->children[i] = nullptr;
+                j++;
+            }
+        }
+    }
+    else{
+        //move both keys and children over to insert new key
+        for(int i = root->size; i > ind; i--){
+            root->keys[i] = root->keys[i-1];
+        }
+        for(int i = root->size+1; i > ind+1; i--){
+            root->children[i] = root->children[i-1];
+        }
+        double key = root->children[ind]->keys[2];
+        root->keys[ind] = key;
+        root->keynodes.insert({key, root->children[ind]->keynodes[key]});
+        root->size += 1;
+        Node* newchild = new Node;
+        double key1 = root->children[ind]->keys[3];
+        double key2 = root->children[ind]->keys[4];
+        newchild->keys[0] = key1;
+        newchild->keys[1] = key2;
+        newchild->size = 2;
+        root->children[ind]->size = 2;
+        newchild->keynodes.insert({key1 ,root->children[ind]->keynodes[key1]});
+        newchild->keynodes.insert({key2 ,root->children[ind]->keynodes[key2]});
+        root->children[ind+1] = newchild;
+        for(int i = 2; i < 5; i++){
+            //gets rid of nodes and keys in this child that have moved
+            root->children[ind]->keynodes.erase(root->children[ind]->keys[i]);
+            root->children[ind]->keys[i] = 0;
+        }
+        if(root->children[0]->ifLeaf == false){
+            //transfer children of split array
+            root->children[ind+1]->ifLeaf = false;
+            int j = 0;
+            for(int i = 3; i < 6; i++){
+                root->children[ind+1]->children[j] = root->children[ind]->children[i];
+                root->children[ind]->children[i] = nullptr;
+                j++;
+            }
+        }
+        }
+
 }
