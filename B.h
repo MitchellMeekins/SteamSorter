@@ -38,7 +38,8 @@ void BTree::Insert(double key){
         Node* newroot = new Node;
         //makes new root key middle of child
         newroot->keys[0] = root->keys[2];
-        newroot->keynodes.insert({root->keys[2], newroot});
+        newroot->keynodes.insert({root->keys[2], root->keynodes[root->keys[2]]});
+        newroot->size = 1;
         //did all this manually sorry (:/ I was too lazy to code actual logic, if u can think of smth better pls fix this lol
         //keys on left of middle key get added to first new child, and keys on right of middle key get add to second middle child. These new children get added to the new root nodes children array. the children of the root node get readded to the respective new children node children arrays. Also dont forget to fix the ifLeaf variables and to set root as new root
         Node* child1 = root->children[0];
@@ -49,10 +50,17 @@ void BTree::Insert(double key){
         Node* child6 = root->children[5];
         Node* newchild1 = new Node;
         Node* newchild2 = new Node;
+        //insert key nodes into map
+        newchild1->size = 2;
+        newchild2->size = 2;
         newchild1->keys[0] = root->keys[0];
         newchild1->keys[1] = root->keys[1];
+        newchild1->keynodes.insert({root->keys[0], root->keynodes[root->keys[0]]});
+        newchild1->keynodes.insert({root->keys[1], root->keynodes[root->keys[1]]});
         newchild2->keys[0] = root->keys[3];
         newchild2->keys[1] = root->keys[4];
+        newchild2->keynodes.insert({root->keys[3], root->keynodes[root->keys[3]]});
+        newchild2->keynodes.insert({root->keys[4], root->keynodes[root->keys[4]]});
         newchild1->children[0] = child1;
         newchild1->children[1] = child2;
         newchild1->children[2] = child3;
