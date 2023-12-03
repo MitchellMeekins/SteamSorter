@@ -36,6 +36,8 @@ public:
     void Insert(double key, string URL, string name, string cat, string dev, double price);
     //ind is the index of the child node
     Node* Split(Node* root, int ind);
+    Node* HighestKey();
+    
 };
 
 void BTree::Insert(double key, string URL, string name, string cat, string dev, double price){
@@ -270,3 +272,19 @@ Node* BTree::Split(Node* root, int ind){
     return root;
 
 }
+
+Node* BTree::HighestKey(){
+    Node* curr = root;
+    while(curr->ifLeaf == false){
+        //finds largest index where there is a child
+        int ind = 0;
+        for(int i = 0; i < curr->size; i++){
+            if(curr->children[i] != nullptr){
+                ind = i;
+            }
+        }
+        curr = curr->children[ind];
+    }
+    return curr;
+}
+
