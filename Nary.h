@@ -24,7 +24,6 @@ private:
     Node* root = nullptr;
 public:
     void insert(double key);
-    Node* search(Node* root, double key);
 };
 
 void NaryTree::insert(double key) {
@@ -32,7 +31,7 @@ void NaryTree::insert(double key) {
         root = new Node;
         root->keys[0] = key;
         root->size = 1;
-        root->keynodes.insert({ key, root });
+        root->keynodes.insert({key, root});
         root->ifLeaf = true;
         return;
     }
@@ -60,16 +59,6 @@ void NaryTree::insert(double key) {
     currentNode->size++;
 
     Node* newChild = new Node;
-    currentNode->keynodes.insert({ key, newChild });
+    currentNode->keynodes.insert({key, newChild});
 
 }
-
- /*Node* NaryTree::search(Node* root, double key)
-{
-     if (root == nullptr)
-     {
-         return nullptr; //If the tree is empty, there are no keys
-     }
-     if(root->key == )
-    return nullptr; //If the requested key is not in the tree
-}*/
