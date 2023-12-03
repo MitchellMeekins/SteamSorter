@@ -32,12 +32,13 @@ struct Node{
 class BTree{
 private:
     Node* root = nullptr;
+    Node* Search(Node* root, double key);
 public:
     void Insert(double key, string URL, string name, string cat, string dev, double price);
     //ind is the index of the child node
     Node* Split(Node* root, int ind);
     Node* HighestKey();
-    Node* Search(Node* root, double key);
+    Node* publicSearch(double key);
 };
 
 void BTree::Insert(double key, string URL, string name, string cat, string dev, double price){
@@ -313,3 +314,8 @@ Node* BTree::Search(Node* root, double key)
 
     return nullptr;
 }
+
+Node* BTree::publicSearch(double key){
+    return Search(this->root, key);
+}
+
