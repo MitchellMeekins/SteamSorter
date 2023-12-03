@@ -4,6 +4,7 @@
 #include <map>
 #include <vector>
 using namespace std;
+// comment
 
 struct Node {
     Node* children[6];
