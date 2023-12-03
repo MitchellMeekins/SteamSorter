@@ -37,7 +37,7 @@ public:
     //ind is the index of the child node
     Node* Split(Node* root, int ind);
     Node* HighestKey();
-    
+    Node* Search(Node* root, double key);
 };
 
 void BTree::Insert(double key, string URL, string name, string cat, string dev, double price){
@@ -288,3 +288,28 @@ Node* BTree::HighestKey(){
     return curr;
 }
 
+Node* BTree::Search(Node* root, double key)
+{
+    if (root == nullptr)
+    {
+        return nullptr;
+    }
+
+    int total = root->size+1;
+
+    // All the children except the last
+    for (int i = 0; i < total - 1; i++)
+    {
+        Search(root->children[i], key);
+    }
+
+    // Print the current node's data
+    for(int i = 0; i < root->size; i++){
+        if(root->keys[i] == key){
+            return root;
+        }
+    }
+    Search(root->children[total - 1], key);
+
+    return nullptr;
+}
