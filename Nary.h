@@ -72,7 +72,7 @@ Node* NaryTree::search(Node* root, double key)
         return nullptr;
     }
 
-    int total = sizeof(root->children);
+    int total = sizeof(root->children)/sizeof(int);
 
     // All the children except the last 
     for (int i = 0; i < total - 1; i++)
