@@ -310,12 +310,12 @@ Node* BTree::Search(Node* root, double key)
             return root;
         }
     }
-    Search(root->children[total - 1], key);
+    root = Search(root->children[total - 1], key);
 
-    return nullptr;
+    return root;
 }
 
 Node* BTree::publicSearch(double key){
-    return Search(this->root, key);
+    Node* node = Search(this->root, key);
+    return node->keynodes[key];
 }
-
