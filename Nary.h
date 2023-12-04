@@ -1,10 +1,9 @@
 #pragma once
-// change soemthnge
 #include <iostream>
 #include <map>
 #include <vector>
 using namespace std;
-// comment
+
 
 struct Node {
     Node* children[6];
@@ -26,6 +25,10 @@ private:
 public:
     void insert(double key);
     Node* search(Node* root, double key);
+    Node* searchDev(Node* root, string dev);
+    Node* searchPrice(Node* root, double price);
+    vector<Node*> devs;
+    vector<Node*> price;
 };
 
 void NaryTree::insert(double key) {
@@ -89,3 +92,55 @@ Node* NaryTree::search(Node* root, double key)
 
     return nullptr;//
 }
+
+Node* NaryTree::searchDev(Node* root, string dev)
+{
+    if (root == nullptr)
+    {
+        return nullptr;
+    }
+
+    int total = sizeof(root->children)/sizeof(int);
+
+    // All the children except the last 
+    for (int i = 0; i < total - 1; i++)
+    {
+        searchDev(root->children[i], dev);
+    }
+
+    // Print the current node's data 
+    if (root->dev == dev)
+    {
+       devs.push_back(root);
+    }
+    searchDev(root->children[total - 1], dev);
+
+    return nullptr;//
+}
+
+Node* NaryTree::searchPrice(Node* root, double price)
+{
+    if (root == nullptr)
+    {
+        return nullptr;
+    }
+
+    int total = sizeof(root->children)/sizeof(int);
+
+    // All the children except the last 
+    for (int i = 0; i < total - 1; i++)
+    {
+        searchPrice(root->children[i], price);
+    }
+
+    // Print the current node's data 
+    if (root->price == price)
+    {
+       devs.push_back(root);
+    }
+    searchPrice(root->children[total - 1], price);
+
+    return nullptr;//
+}
+
+
