@@ -41,6 +41,8 @@ public:
     Node* HighestKey();
     Node* publicSearchName(string name);
     Node* publicSearchPrice(double price);
+    vector<Node*> prices;
+    vector<Node*> names;
 };
 
 void BTree::Insert(double key, string URL, string name, string cat, string dev, double price){
@@ -320,6 +322,7 @@ Node* BTree::SearchName(Node* root, string name)
     // Print the current node's data
     for(int i = 0; i < root->size; i++){
         if(root->keynodes[root->keys[i]]->name == name){
+            names.push_back(root->keynodes[root->keys[i]]);
             return root;
         }
     }
@@ -356,6 +359,7 @@ Node* BTree::SearchPrice(Node* root, double price)
     // Print the current node's data
     for(int i = 0; i < root->size; i++){
         if(root->keynodes[root->keys[i]]->price == price){
+            prices.push_back(root->keynodes[root->keys[i]]);
             return root;
         }
     }
@@ -373,4 +377,3 @@ Node* BTree::publicSearchPrice(double price){
     }
     return node;
 }
-
