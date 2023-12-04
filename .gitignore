@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/files/data/steam_data.csv
+/files/data/steam_data_.csv
