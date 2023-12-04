@@ -3,12 +3,15 @@
 #include <iostream>
 #include <windows.h>
 #include <shellapi.h>
+#include <fstream>
+#include "B.h"
 using namespace std;
 void setStar(string starLocation, vector<sf::Sprite>& starVect);
 void setGameImage(sf::RenderWindow& wind, string starLocation, sf::Sprite& imageSprite);
 void drawStars(RenderWindow& wind, vector<sf::Sprite> vect, int act);
 void drawText(RenderWindow& wind);
 void drawGameList(RenderWindow& wind, vector<sf::Text>& vectorPush);
+void ConfigData(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile);
 vector<sf::Text> setGameList(sf::Font& fontt);
 //void setDrawURL(RenderWindow& wind);
 int main()
@@ -28,6 +31,31 @@ int main()
     vectorPush = setGameList(font);
    // vector<sf::Text> gameList = setGameList();
     sf::Color backgroundColor(176,224, 230);
+
+    BTree BTree;
+    std::ifstream readFile("files/data/steam_data_.csv");
+    string throwaway;
+    std::getline(readFile, throwaway); //ignore csv header
+    string URL;
+    string name;
+    string image_url;
+    string allReviews;
+    string date;
+    string developer;
+    string price;
+    for (unsigned int i = 0; i < 47; i++)
+    {
+        ConfigData(URL,name,image_url,allReviews,date,developer, price, readFile);
+        cout << URL << endl;
+        cout << name << endl;
+        cout << image_url << endl;
+        cout << allReviews << endl;
+        cout << date << endl;
+        cout << developer << endl;
+        cout << price << endl;
+        cout << endl;
+        
+    }
 
     while (window.isOpen())
     {
@@ -185,6 +213,49 @@ void drawGameList(RenderWindow& wind, vector<sf::Text>& vect)
     
 }
 
+void ConfigData(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile)
+{
+    string throwaway;
+    if (readFile.is_open())
+    {
+    }
+    std::getline(readFile, _URL, ',');  // Read up to the first comma
+    std::getline(readFile, name, ',');
+    std::getline(readFile, throwaway, ',');
+    std::getline(readFile, _image_url, ',');
+    std::getline(readFile, _allReviews, ',');
+    std::getline(readFile, throwaway, ',');
+    std::getline(readFile, date, ',');
+    std::getline(readFile, developer, ',');
+    std::getline(readFile, throwaway, ',');
+    std::getline(readFile, _price, ',');
+    if (_price.find("$") != std::string::npos)
+    {
+        if (_price.find("This product"))
+        {
+            _price = _price.substr(_price.find("$") + 1, _price.find("This product") - 45);
+        }
+        else
+        {
+            _price = _price.substr(_price.find("$") + 1, _price.find("99$")-5);
+        }
+    }
+    else if (_price.find("Free to") != std::string::npos)
+    {
+        if (_price.find("play") != std::string::npos)
+        {
+            _price = _price.substr(_price.find("Free to"), _price.find("play") + 13);
+
+        }
+        else if (_price.find("play") != std::string::npos)
+        {
+            _price = _price.substr(_price.find("Free to"), _price.find("Free to") + 15);
+        }
+    }
+    std::getline(readFile, throwaway);
+
+}
+
 vector<sf::Text> setGameList(sf::Font& fontt)
 {
     vector<sf::Text> vectorPush;
@@ -202,3 +273,4 @@ vector<sf::Text> setGameList(sf::Font& fontt)
     
     return vectorPush;
 }
+
