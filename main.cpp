@@ -43,7 +43,7 @@ int main()
     string date;
     string developer;
     string price;
-    for (unsigned int i = 0; i < 47; i++)
+    for (unsigned int i = 0; i < 200; i++)
     {
         ConfigData(URL,name,image_url,allReviews,date,developer, price, readFile);
         cout << URL << endl;
@@ -231,26 +231,26 @@ void ConfigData(string& _URL, string& name, string& _image_url, string& _allRevi
     std::getline(readFile, _price, ',');
     if (_price.find("$") != std::string::npos)
     {
-        if (_price.find("This product"))
+        if((_price.find(".") - _price.find("$")) == 3)
         {
-            _price = _price.substr(_price.find("$") + 1, _price.find("This product") - 45);
+            _price = _price.substr(_price.find("$")+1, 5);
         }
         else
         {
-            _price = _price.substr(_price.find("$") + 1, _price.find("99$")-5);
+            _price = _price.substr(_price.find("$") + 1, 4);
         }
     }
     else if (_price.find("Free to") != std::string::npos)
     {
         if (_price.find("play") != std::string::npos)
         {
-            _price = _price.substr(_price.find("Free to"), _price.find("play") + 13);
+            _price = _price.substr(_price.find("Free to"), 12);
 
         }
-        else if (_price.find("play") != std::string::npos)
-        {
-            _price = _price.substr(_price.find("Free to"), _price.find("Free to") + 15);
-        }
+    }
+    else
+    {
+        _price = "0";
     }
     std::getline(readFile, throwaway);
 
