@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <shellapi.h>
 #include <fstream>
+#include <thread>
 #include "B.h"
 using namespace std;
 void setStar(string starLocation, vector<sf::Sprite>& starVect);
@@ -12,6 +13,8 @@ void drawStars(RenderWindow& wind, vector<sf::Sprite> vect, int act);
 void drawText(RenderWindow& wind);
 void drawGameList(RenderWindow& wind, vector<sf::Text>& vectorPush);
 void ConfigData(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile);
+void dataProcessingLoop(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile, BTree TreeB);
+void drawButtons(RenderWindow& wind, sf::Color firstButton, sf::Color secondButton);
 vector<sf::Text> setGameList(sf::Font& fontt);
 //void setDrawURL(RenderWindow& wind);
 int main()
@@ -43,19 +46,21 @@ int main()
     string date;
     string developer;
     string price;
-    for (unsigned int i = 0; i < 1; i++)
-    {
-        ConfigData(URL,name,image_url,allReviews,date,developer, price, readFile);
-        cout << URL << endl;
-        cout << name << endl;
-        cout << image_url << endl;
-        cout << allReviews << endl;
-        cout << date << endl;
-        cout << developer << endl;
-        cout << price << endl;
-        cout << endl;
-        
-    }
+    
+    std::thread dataProcessingThread(dataProcessingLoop,
+        std::ref(URL),
+        std::ref(name),
+        std::ref(image_url),
+        std::ref(allReviews),
+        std::ref(date),
+        std::ref(developer),
+        std::ref(price),
+        std::ref(readFile),
+        std::ref(BTree));
+
+    sf::Color BTreeButtonColor(100, 100, 100);
+    sf::Color NaryButtonColor(116, 164, 170);
+
 
     while (window.isOpen())
     {
@@ -71,14 +76,30 @@ int main()
             {
                 if (event.mouseButton.button == sf::Mouse::Left && lock_click != true) //specifies
                 {
-                    /* your code here*/
                     sf::Vector2i mouse_position_leftClick = sf::Mouse::getPosition(window);
-                    if (mouse_position_leftClick.x >=  (850-135) && mouse_position_leftClick.x < (850)+120) //Hardcoded values
+                    cout << "Mouse x: "<< mouse_position_leftClick.x << endl;
+                    cout << "Mouse x: " << (mouse_position_leftClick.x >= (790) && mouse_position_leftClick.x < (965)) << endl;
+                    cout << "Mouse y: " << mouse_position_leftClick.y << endl;
+                    cout << "Mouse y: " << (mouse_position_leftClick.y >= (100) && mouse_position_leftClick.y < (155)) << endl;
+                    if (mouse_position_leftClick.x >=  (850-135) && mouse_position_leftClick.x < (850)+120)
                     {
                         if (mouse_position_leftClick.y >= (650) && mouse_position_leftClick.y < (680))
                         {
                             cout << "Game URL Clicked" << endl;
                             ShellExecuteA(0, NULL, "http://www.google.com", NULL, NULL, 10);
+                        }
+                    }
+                    if (mouse_position_leftClick.x >= (790) && mouse_position_leftClick.x < (965))
+                    {
+                        if (mouse_position_leftClick.y >= (100) && mouse_position_leftClick.y < (155))
+                        {
+                            BTreeButtonColor = sf::Color(100, 100, 100);
+                            NaryButtonColor = sf::Color(116, 164, 170);
+                        }
+                        else if (mouse_position_leftClick.y >= (160) && mouse_position_leftClick.y < (215))
+                        {
+                             NaryButtonColor = sf::Color(100, 100, 100);
+                             BTreeButtonColor = sf::Color(116, 164, 170);
                         }
                     }
                     lock_click = true; //And now, after all your code, this will lock the loop and not print "lmb" in a x held time. 
@@ -96,6 +117,7 @@ int main()
         }
 
         window.clear(backgroundColor);
+        drawButtons(window, BTreeButtonColor, NaryButtonColor);
         drawStars(window, starVector, starRating);
         drawText(window);
         window.draw(imageSprite);
@@ -178,13 +200,13 @@ void drawText(RenderWindow& wind)
     URL_Text.setPosition(850 - (Rating.getLocalBounds().width) - 25, 650);
 
     sf::Text Price("Price:", font);
-    Price.setCharacterSize(30);
+    Price.setCharacterSize(32);
     Price.setStyle(sf::Text::Bold);
     Price.setFillColor(sf::Color::Black);
-    Price.setPosition(20, 150);
+    Price.setPosition(20, 90);
 
     sf::Text Developer("Developer:", font);
-    Developer.setCharacterSize(30);
+    Developer.setCharacterSize(32);
     Developer.setStyle(sf::Text::Bold);
     Developer.setFillColor(sf::Color::Black);
     Developer.setPosition(20, 200);
@@ -195,13 +217,26 @@ void drawText(RenderWindow& wind)
     Date.setFillColor(sf::Color::Black);
     Date.setPosition(20, 250);
 
+    sf::Text BTreeText("B-Tree", font);
+    BTreeText.setCharacterSize(40);
+    BTreeText.setStyle(sf::Text::Bold);
+    BTreeText.setFillColor(sf::Color::Black);
+    BTreeText.setPosition(800, 100);
+
+    sf::Text NaryText("N-Ary", font);
+    NaryText.setCharacterSize(40);
+    NaryText.setStyle(sf::Text::Bold);
+    NaryText.setFillColor(sf::Color::Black);
+    NaryText.setPosition(800, 160);
 
     wind.draw(searchCri);
     wind.draw(Rating);
     wind.draw(URL_Text);
     wind.draw(Price);
     wind.draw(Developer);
-    wind.draw(Date);
+    //wind.draw(Date);
+    wind.draw(BTreeText);
+    wind.draw(NaryText);
 }
 
 void drawGameList(RenderWindow& wind, vector<sf::Text>& vect)
@@ -224,14 +259,24 @@ void ConfigData(string& _URL, string& name, string& _image_url, string& _allRevi
     std::getline(readFile, throwaway, ',');
     std::getline(readFile, _image_url, ',');
     std::getline(readFile, _allReviews, ',');
-    string numReviews = _allReviews.substr(_allReviews.find("(") + 1, _allReviews.find(")") - _allReviews.find("(") - 1);
-    int numReview = stoi(numReviews);
-    string percent = _allReviews.substr(_allReviews.find("%") - 2, 2);
-    int percentInt = stoi(percent);
-    double truePrice = numReview * (percentInt);
-    truePrice /= 100;
-    numReviews = to_string(truePrice);
-    _allReviews = numReviews;
+     if (_allReviews.find("No user") != std::string::npos)
+    {
+
+        _allReviews = "0";
+    }
+    else if (_allReviews.find("(") != std::string::npos)
+    {
+        string numReviews = _allReviews.substr(_allReviews.find("(") + 1, _allReviews.find(")") - _allReviews.find("(") - 1);
+        int numReview = stoi(numReviews);
+        string percent = _allReviews.substr(_allReviews.find("%") - 2, 2);
+        int percentInt = stoi(percent);
+        double truePrice = numReview * (percentInt);
+        truePrice /= 100;
+        numReviews = to_string(truePrice);
+        _allReviews = numReviews;
+    }
+    
+    
     std::getline(readFile, throwaway, ',');
     std::getline(readFile, date, ',');
     std::getline(readFile, developer, ',');
@@ -272,13 +317,49 @@ vector<sf::Text> setGameList(sf::Font& fontt)
     {
         Game.setFont(fontt);
         Game.setString((to_string(i+1)+ ". GAME_" + to_string(i+1)));
-        Game.setCharacterSize(30);
+        Game.setCharacterSize(35);
         Game.setStyle(sf::Text::Bold);
         Game.setFillColor(sf::Color::Black);
-        Game.setPosition(25, 400+(35*i));
+        Game.setPosition(50, 400+(45*i));
         vectorPush.push_back(Game);
     }
     
     return vectorPush;
 }
 
+void dataProcessingLoop(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile, BTree TreeB) {
+    for (unsigned int i = 0; i < 80000; i++) {
+        // Assuming you have the necessary variables and functions declared
+        ConfigData(_URL, name, _image_url, _allReviews, date, developer, _price, readFile);
+       /* cout << _URL << endl;
+        cout << name << endl;
+        cout << _image_url << endl;
+        cout << _allReviews << endl;
+        cout << date << endl;
+        cout << developer << endl;
+        cout << _price << endl;
+        cout << endl;*/
+    }
+}
+
+void drawButtons(RenderWindow& wind, sf::Color firstButton, sf::Color secondButton)
+{
+    sf::RectangleShape rectanglebTree;
+    // Set the size of the rectangle
+    rectanglebTree.setSize(sf::Vector2f(175.f, 55.f));
+    // Set the position of the rectangle
+    rectanglebTree.setPosition(790.f, 100.f);
+    // Set the fill color of the rectangle
+    rectanglebTree.setFillColor(firstButton);
+
+    sf::RectangleShape rectanglenaryTree;
+    // Set the size of the rectangle
+    rectanglenaryTree.setSize(sf::Vector2f(175.f, 55.f));
+    // Set the position of the rectangle
+    rectanglenaryTree.setPosition(790.f, 160.f);
+    // Set the fill color of the rectangle
+    rectanglenaryTree.setFillColor(secondButton);
+
+    wind.draw(rectanglebTree);
+    wind.draw(rectanglenaryTree);
+}
