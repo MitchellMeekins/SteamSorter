@@ -43,7 +43,7 @@ int main()
     string date;
     string developer;
     string price;
-    for (unsigned int i = 0; i < 200; i++)
+    for (unsigned int i = 0; i < 1; i++)
     {
         ConfigData(URL,name,image_url,allReviews,date,developer, price, readFile);
         cout << URL << endl;
@@ -224,6 +224,14 @@ void ConfigData(string& _URL, string& name, string& _image_url, string& _allRevi
     std::getline(readFile, throwaway, ',');
     std::getline(readFile, _image_url, ',');
     std::getline(readFile, _allReviews, ',');
+    string numReviews = _allReviews.substr(_allReviews.find("(") + 1, _allReviews.find(")") - _allReviews.find("(") - 1);
+    int numReview = stoi(numReviews);
+    string percent = _allReviews.substr(_allReviews.find("%") - 2, 2);
+    int percentInt = stoi(percent);
+    double truePrice = numReview * (percentInt);
+    truePrice /= 100;
+    numReviews = to_string(truePrice);
+    _allReviews = numReviews;
     std::getline(readFile, throwaway, ',');
     std::getline(readFile, date, ',');
     std::getline(readFile, developer, ',');
