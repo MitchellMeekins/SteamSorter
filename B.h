@@ -41,6 +41,8 @@ public:
     Node* HighestKey();
     Node* publicSearchName(string name);
     Node* publicSearchPrice(double price);
+    vector<Node*> prices;
+    vector<Node*> names;
 };
 
 void BTree::Insert(double key, string URL, string name, string cat, string dev, double price){
@@ -284,7 +286,7 @@ Node* BTree::HighestKey(){
     while(curr->ifLeaf == false){
         //finds largest index where there is a child
         int ind = 0;
-        for(int i = 0; i < curr->size; i++){
+        for(int i = 0; i < curr->size+1; i++){
             if(curr->children[i] != nullptr){
                 ind = i;
             }
@@ -294,12 +296,12 @@ Node* BTree::HighestKey(){
             biggestNode = curr;
         }
         curr = curr->children[ind];
-        if(curr->keys[ind-1] > highest){
-            highest = curr->keys[ind-1];
+        if(curr->keys[curr->size-1] > highest){
+            highest = curr->keys[curr->size-1];
             biggestNode = curr;
         }
     }
-    return biggestNode;
+    return biggestNode->keynodes[biggestNode->keys[biggestNode->size-1]];
 }
 
 Node* BTree::SearchName(Node* root, string name)
@@ -320,6 +322,7 @@ Node* BTree::SearchName(Node* root, string name)
     // Print the current node's data
     for(int i = 0; i < root->size; i++){
         if(root->keynodes[root->keys[i]]->name == name){
+            names.push_back(root->keynodes[root->keys[i]]);
             return root;
         }
     }
@@ -356,6 +359,7 @@ Node* BTree::SearchPrice(Node* root, double price)
     // Print the current node's data
     for(int i = 0; i < root->size; i++){
         if(root->keynodes[root->keys[i]]->price == price){
+            prices.push_back(root->keynodes[root->keys[i]]);
             return root;
         }
     }
@@ -374,3 +378,15 @@ Node* BTree::publicSearchPrice(double price){
     return node;
 }
 
+int main() {
+    BTree node;
+    for(double i = 1; i < 60; i++){
+        node.Insert(i, "", "", "", "", 0);
+    }
+    node.Insert(80001, "", "seep", "", "", 0);
+    Node* lel1 = node.publicSearchName("seep");
+    Node* lel = node.HighestKey();
+    std::cout << lel1->name << endl;
+    std::cout << lel->name;
+   
+}
