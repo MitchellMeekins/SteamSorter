@@ -6,6 +6,7 @@
 #include <fstream>
 #include <thread>
 #include "B.h"
+#include "Nary.h"
 using namespace std;
 void setStar(string starLocation, vector<sf::Sprite>& starVect);
 void setGameImage(sf::RenderWindow& wind, string starLocation, sf::Sprite& imageSprite);
@@ -14,7 +15,7 @@ void drawText(RenderWindow& wind);
 void drawGameList(RenderWindow& wind, vector<sf::Text>& vectorPush);
 void ConfigData(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile);
 void dataProcessingLoop(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile, BTree TreeB);
-void drawButtons(RenderWindow& wind, sf::Color firstButton, sf::Color secondButton);
+void drawButtons(RenderWindow& wind, sf::Color firstButton, sf::Color secondButton, sf::Color freeButton, sf::Color firstPriceButton, sf::Color secondPriceButton, sf::Color thirdPriceButton);
 vector<sf::Text> setGameList(sf::Font& fontt);
 //void setDrawURL(RenderWindow& wind);
 int main()
@@ -36,6 +37,7 @@ int main()
     sf::Color backgroundColor(176,224, 230);
 
     BTree BTree;
+    //NaryTree
     std::ifstream readFile("files/data/steam_data_.csv");
     string throwaway;
     std::getline(readFile, throwaway); //ignore csv header
@@ -60,7 +62,10 @@ int main()
 
     sf::Color BTreeButtonColor(100, 100, 100);
     sf::Color NaryButtonColor(116, 164, 170);
-
+    sf::Color freeButton(100, 100, 100);
+    sf::Color firstPriceButton(100, 100, 100);
+    sf::Color secondPriceButton(100, 100, 100);
+    sf::Color thirdPriceButton(100, 100, 100);
 
     while (window.isOpen())
     {
@@ -102,6 +107,37 @@ int main()
                              BTreeButtonColor = sf::Color(116, 164, 170);
                         }
                     }
+                    if (mouse_position_leftClick.y >= (135) && mouse_position_leftClick.y < (185))
+                    {
+                        if (mouse_position_leftClick.x >= (20) && mouse_position_leftClick.x < (95))
+                        {
+                            freeButton = sf::Color(116, 164, 170);
+                            firstPriceButton = sf::Color(100, 100, 100);
+                            secondPriceButton = sf::Color(100, 100, 100);
+                            thirdPriceButton = sf::Color(100, 100, 100);
+                        }
+                        if (mouse_position_leftClick.x >= (95) && mouse_position_leftClick.x < (170))
+                        {
+                            freeButton = sf::Color(100, 100, 100);
+                            firstPriceButton = sf::Color(116, 164, 170);
+                            secondPriceButton = sf::Color(100, 100, 100);
+                            thirdPriceButton = sf::Color(100, 100, 100);
+                        }
+                        if (mouse_position_leftClick.x >= (170) && mouse_position_leftClick.x < (245))
+                        {
+                            freeButton = sf::Color(100, 100, 100);
+                            firstPriceButton = sf::Color(100, 100, 100);
+                            secondPriceButton = sf::Color(116, 164, 170);
+                            thirdPriceButton = sf::Color(100, 100, 100);
+                        }
+                        if (mouse_position_leftClick.x >= (245) && mouse_position_leftClick.x < (320))
+                        {
+                            freeButton = sf::Color(100, 100, 100);
+                            firstPriceButton = sf::Color(100, 100, 100);
+                            secondPriceButton = sf::Color(100, 100, 100);
+                            thirdPriceButton = sf::Color(116, 164, 170);
+                        }
+                    }
                     lock_click = true; //And now, after all your code, this will lock the loop and not print "lmb" in a x held time. 
                     /* or here idk */
                 }
@@ -117,7 +153,7 @@ int main()
         }
 
         window.clear(backgroundColor);
-        drawButtons(window, BTreeButtonColor, NaryButtonColor);
+        drawButtons(window, BTreeButtonColor, NaryButtonColor, freeButton, firstPriceButton, secondPriceButton, thirdPriceButton);
         drawStars(window, starVector, starRating);
         drawText(window);
         window.draw(imageSprite);
@@ -126,6 +162,7 @@ int main()
         window.display();
     }
     TextureManager::Clear();
+    dataProcessingThread.join();
     return 0;
 }
 
@@ -200,7 +237,7 @@ void drawText(RenderWindow& wind)
     URL_Text.setPosition(850 - (Rating.getLocalBounds().width) - 25, 650);
 
     sf::Text Price("Price:", font);
-    Price.setCharacterSize(32);
+    Price.setCharacterSize(35);
     Price.setStyle(sf::Text::Bold);
     Price.setFillColor(sf::Color::Black);
     Price.setPosition(20, 90);
@@ -209,7 +246,7 @@ void drawText(RenderWindow& wind)
     Developer.setCharacterSize(32);
     Developer.setStyle(sf::Text::Bold);
     Developer.setFillColor(sf::Color::Black);
-    Developer.setPosition(20, 200);
+    Developer.setPosition(20, 215);
 
     sf::Text Date("Date Published:", font);
     Date.setCharacterSize(30);
@@ -229,12 +266,25 @@ void drawText(RenderWindow& wind)
     NaryText.setFillColor(sf::Color::Black);
     NaryText.setPosition(800, 160);
 
+    sf::Text FreeText("Free", font);
+    FreeText.setCharacterSize(28);
+    FreeText.setStyle(sf::Text::Bold);
+    FreeText.setFillColor(sf::Color::Black);
+    FreeText.setPosition(25, 140);
+
+    sf::Text Less5Text("$5", font);
+    Less5Text.setCharacterSize(28);
+    Less5Text.setStyle(sf::Text::Bold);
+    Less5Text.setFillColor(sf::Color::Black);
+    Less5Text.setPosition(100, 140);
+
     wind.draw(searchCri);
     wind.draw(Rating);
     wind.draw(URL_Text);
     wind.draw(Price);
     wind.draw(Developer);
-    //wind.draw(Date);
+    wind.draw(FreeText);
+    wind.draw(Less5Text);
     wind.draw(BTreeText);
     wind.draw(NaryText);
 }
@@ -297,7 +347,7 @@ void ConfigData(string& _URL, string& name, string& _image_url, string& _allRevi
     {
         if (_price.find("play") != std::string::npos)
         {
-            _price = _price.substr(_price.find("Free to"), 12);
+            _price = "0";
 
         }
     }
@@ -313,7 +363,7 @@ vector<sf::Text> setGameList(sf::Font& fontt)
 {
     vector<sf::Text> vectorPush;
     sf::Text Game;
-    for (unsigned int i = 0; i < 6; i++)
+    for (unsigned int i = 0; i < 5; i++)
     {
         Game.setFont(fontt);
         Game.setString((to_string(i+1)+ ". GAME_" + to_string(i+1)));
@@ -327,22 +377,25 @@ vector<sf::Text> setGameList(sf::Font& fontt)
     return vectorPush;
 }
 
-void dataProcessingLoop(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile, BTree TreeB) {
-    for (unsigned int i = 0; i < 80000; i++) {
+void dataProcessingLoop(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile, BTree TreeB) 
+{
+    for (unsigned int i = 0; i < 50; i++) {
         // Assuming you have the necessary variables and functions declared
         ConfigData(_URL, name, _image_url, _allReviews, date, developer, _price, readFile);
-       /* cout << _URL << endl;
+        TreeB.Insert(stod(_allReviews), _image_url, name, date, developer, stod(_price));
+        cout << _URL << endl;
         cout << name << endl;
         cout << _image_url << endl;
         cout << _allReviews << endl;
         cout << date << endl;
         cout << developer << endl;
         cout << _price << endl;
-        cout << endl;*/
+        cout << endl;
     }
+    cout << "Completed" << endl;
 }
 
-void drawButtons(RenderWindow& wind, sf::Color firstButton, sf::Color secondButton)
+void drawButtons(RenderWindow& wind, sf::Color firstButton, sf::Color secondButton, sf::Color freeButton, sf::Color firstPriceButton, sf::Color secondPriceButton, sf::Color thirdPriceButton)
 {
     sf::RectangleShape rectanglebTree;
     // Set the size of the rectangle
@@ -360,6 +413,54 @@ void drawButtons(RenderWindow& wind, sf::Color firstButton, sf::Color secondButt
     // Set the fill color of the rectangle
     rectanglenaryTree.setFillColor(secondButton);
 
+    sf::RectangleShape rectangleGameList;
+    rectangleGameList.setSize(sf::Vector2f(525.f, 285.f));
+    rectangleGameList.setPosition(40.f, 390.f);
+    rectangleGameList.setFillColor(sf::Color(125, 125, 125));
+    
+    sf::RectangleShape rectangleFree;
+    rectangleFree.setSize(sf::Vector2f(75.f, 50.f));
+    rectangleFree.setPosition(20.f, 135.f);
+    rectangleFree.setFillColor(sf::Color(freeButton));
+
+    sf::RectangleShape rectangleFiveLess;
+    rectangleFiveLess.setSize(sf::Vector2f(75.f, 50.f));
+    rectangleFiveLess.setPosition(95.f, 135.f);
+    rectangleFiveLess.setFillColor(sf::Color(firstPriceButton));
+
+    sf::RectangleShape rectangleNext;
+    rectangleNext.setSize(sf::Vector2f(75.f, 50.f));
+    rectangleNext.setPosition(170.f, 135.f);
+    rectangleNext.setFillColor(sf::Color(secondPriceButton));
+
+    sf::RectangleShape rectangleNextN;
+    rectangleNextN.setSize(sf::Vector2f(75.f, 50.f));
+    rectangleNextN.setPosition(245.f, 135.f);
+    rectangleNextN.setFillColor(sf::Color(thirdPriceButton));
+
+    sf::RectangleShape firstVertBar;
+    firstVertBar.setSize(sf::Vector2f(3.f, 50.f));
+    firstVertBar.setPosition(95.f, 135.f);
+    firstVertBar.setFillColor(sf::Color::White);
+    sf::RectangleShape secondVertBar;
+    secondVertBar.setSize(sf::Vector2f(3.f, 50.f));
+    secondVertBar.setPosition(170.f, 135.f);
+    secondVertBar.setFillColor(sf::Color::White);
+    sf::RectangleShape thirdVertBar;
+    thirdVertBar.setSize(sf::Vector2f(3.f, 50.f));
+    thirdVertBar.setPosition(245.f, 135.f);
+    thirdVertBar.setFillColor(sf::Color::White);
+
     wind.draw(rectanglebTree);
     wind.draw(rectanglenaryTree);
+    wind.draw(rectangleGameList);
+    wind.draw(rectangleFree);
+    wind.draw(rectangleFiveLess);
+    wind.draw(rectangleNext);
+    wind.draw(rectangleNextN);
+    wind.draw(firstVertBar);
+    wind.draw(secondVertBar);
+    wind.draw(thirdVertBar);
+
+
 }
