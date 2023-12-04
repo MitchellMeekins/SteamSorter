@@ -37,7 +37,7 @@ private:
 public:
     void Insert(double key, string URL, string name, string cat, string dev, double price);
     //ind is the index of the child node
-    Node* Split(Node* root, int ind);
+    void Split(Node* root, int ind);
     Node* HighestKey();
     Node* publicSearchName(string name);
     Node* publicSearchPrice(double price);
@@ -66,8 +66,8 @@ void BTree::Insert(double key, string URL, string name, string cat, string dev, 
         Node* child4 = root->children[3];
         Node* child5 = root->children[4];
         Node* child6 = root->children[5];
-        Node* newchild1 = root->keynodes[root->keys[0]];
-        Node* newchild2 = root->keynodes[root->keys[3]];
+        Node* newchild1 = new Node("", "", "", "", 0);
+        Node* newchild2 = new Node("", "", "", "", 0);
         //insert key nodes into map
         newchild1->size = 2;
         newchild2->size = 2;
@@ -85,6 +85,7 @@ void BTree::Insert(double key, string URL, string name, string cat, string dev, 
         newchild2->children[0] = child4;
         newchild2->children[1] = child5;
         newchild2->children[2] = child6;
+        //for(int i = 0; i < newchild1->size+1)
         if(newchild1->children[0] != nullptr){
             if(newchild1->children[0]->ifLeaf){
                 newchild1->ifLeaf = false;
@@ -143,7 +144,7 @@ void BTree::Insert(double key, string URL, string name, string cat, string dev, 
             }
             //if a node along the path is found to be full, split it
             if(curr->children[ind+1]->size == 5){
-                curr = Split(curr, ind+1);
+                Split(curr, ind+1);
             }
             curr = curr->children[ind+1];
         }
@@ -162,7 +163,7 @@ void BTree::Insert(double key, string URL, string name, string cat, string dev, 
         else{
             //checks if child node is full, splits if it is
             if(curr->children[ind+1]->size == 5){
-                curr = Split(curr, ind+1);
+                Split(curr, ind+1);
                 for(int i = 0; i < curr->size; i++){
                     if(curr->keys[i] < key){
                         ind = i;
@@ -201,7 +202,7 @@ void BTree::Insert(double key, string URL, string name, string cat, string dev, 
     }}
 }
 
-Node* BTree::Split(Node* root, int ind){
+void BTree::Split(Node* root, int ind){
     //this function only works under the assumption the parent node isn't full
     Node* newchild = new Node("", "", "", "", 0);
     //if parent node isn't full, then that means the "last" child node there is would be at index 4
@@ -234,6 +235,7 @@ Node* BTree::Split(Node* root, int ind){
                 j++;
             }
         }
+        
     }
     else{
         //move both keys and children over to insert new key
@@ -272,12 +274,13 @@ Node* BTree::Split(Node* root, int ind){
             }
         }
         }
-    return root;
 
 }
 
 Node* BTree::HighestKey(){
     Node* curr = root;
+    Node* biggestNode = nullptr;
+    double highest = 0;
     while(curr->ifLeaf == false){
         //finds largest index where there is a child
         int ind = 0;
@@ -286,9 +289,17 @@ Node* BTree::HighestKey(){
                 ind = i;
             }
         }
+        if(curr->keys[ind-1] > highest){
+            highest = curr->keys[ind-1];
+            biggestNode = curr;
+        }
         curr = curr->children[ind];
+        if(curr->keys[ind-1] > highest){
+            highest = curr->keys[ind-1];
+            biggestNode = curr;
+        }
     }
-    return curr;
+    return biggestNode;
 }
 
 Node* BTree::SearchName(Node* root, string name)
@@ -363,7 +374,3 @@ Node* BTree::publicSearchPrice(double price){
     return node;
 }
 
-Node* BTree::publicSearch(double key){
-    Node* node = Search(this->root, key);
-    return node->keynodes[key];
-}
