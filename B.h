@@ -32,13 +32,15 @@ struct Node{
 class BTree{
 private:
     Node* root = nullptr;
-    Node* Search(Node* root, double key);
+    Node* SearchName(Node* root, string name);
+    Node* SearchPrice(Node* root, double price);
 public:
     void Insert(double key, string URL, string name, string cat, string dev, double price);
     //ind is the index of the child node
     Node* Split(Node* root, int ind);
     Node* HighestKey();
-    Node* publicSearch(double key);
+    Node* publicSearchName(string name);
+    Node* publicSearchPrice(double price);
 };
 
 void BTree::Insert(double key, string URL, string name, string cat, string dev, double price){
@@ -51,7 +53,7 @@ void BTree::Insert(double key, string URL, string name, string cat, string dev, 
     //automatically split root if its full
     else{
     if(root->size == 5){
-        Node* newroot = root->keynodes[root->keys[2]];
+        Node* newroot = new Node("", "", "", "", 0);
         //makes new root key middle of child
         newroot->keys[0] = root->keys[2];
         newroot->keynodes.insert({root->keys[2], root->keynodes[root->keys[2]]});
@@ -289,7 +291,7 @@ Node* BTree::HighestKey(){
     return curr;
 }
 
-Node* BTree::Search(Node* root, double key)
+Node* BTree::SearchName(Node* root, string name)
 {
     if (root == nullptr)
     {
@@ -301,18 +303,64 @@ Node* BTree::Search(Node* root, double key)
     // All the children except the last
     for (int i = 0; i < total - 1; i++)
     {
-        Search(root->children[i], key);
+        SearchName(root->children[i], name);
     }
 
     // Print the current node's data
     for(int i = 0; i < root->size; i++){
-        if(root->keys[i] == key){
+        if(root->keynodes[root->keys[i]]->name == name){
             return root;
         }
     }
-    root = Search(root->children[total - 1], key);
+    root = SearchName(root->children[total - 1], name);
 
     return root;
+}
+
+Node* BTree::publicSearchName(string name){
+    Node* node = SearchName(this->root, name);
+    for(int i = 0; i < node->size; i++){
+        if(node->keynodes[node->keys[i]]->name == name){
+            node = node->keynodes[node->keys[i]];
+        }
+    }
+    return node;
+}
+
+Node* BTree::SearchPrice(Node* root, double price)
+{
+    if (root == nullptr)
+    {
+        return nullptr;
+    }
+
+    int total = root->size+1;
+
+    // All the children except the last
+    for (int i = 0; i < total - 1; i++)
+    {
+        SearchPrice(root->children[i], price);
+    }
+
+    // Print the current node's data
+    for(int i = 0; i < root->size; i++){
+        if(root->keynodes[root->keys[i]]->price == price){
+            return root;
+        }
+    }
+    root = SearchPrice(root->children[total - 1], price);
+
+    return root;
+}
+
+Node* BTree::publicSearchPrice(double price){
+    Node* node = SearchPrice(this->root, price);
+    for(int i = 0; i < node->size; i++){
+        if(node->keynodes[node->keys[i]]->price == price){
+            node = node->keynodes[node->keys[i]];
+        }
+    }
+    return node;
 }
 
 Node* BTree::publicSearch(double key){
