@@ -88,10 +88,12 @@ void BTree::Insert(double key, string URL, string name, string cat, string dev, 
         newchild2->children[1] = child5;
         newchild2->children[2] = child6;
         //for(int i = 0; i < newchild1->size+1)
-        if(newchild1->children[0] != nullptr){
-            if(newchild1->children[0]->ifLeaf){
+        for(int i = 0; i < root->size+1; i++){
+            if(root->children[i] != nullptr){
                 newchild1->ifLeaf = false;
-                newchild2->ifLeaf = false;}}
+                newchild2->ifLeaf = false;
+            }
+        }
         newroot->children[0] = newchild1;
         newroot->children[1] = newchild2;
         newroot->ifLeaf = false;
@@ -323,7 +325,6 @@ Node* BTree::SearchName(Node* root, string name)
     for(int i = 0; i < root->size; i++){
         if(root->keynodes[root->keys[i]]->name == name){
             names.push_back(root->keynodes[root->keys[i]]);
-            return root;
         }
     }
     root = SearchName(root->children[total - 1], name);
@@ -333,11 +334,6 @@ Node* BTree::SearchName(Node* root, string name)
 
 Node* BTree::publicSearchName(string name){
     Node* node = SearchName(this->root, name);
-    for(int i = 0; i < node->size; i++){
-        if(node->keynodes[node->keys[i]]->name == name){
-            node = node->keynodes[node->keys[i]];
-        }
-    }
     return node;
 }
 
@@ -360,7 +356,6 @@ Node* BTree::SearchPrice(Node* root, double price)
     for(int i = 0; i < root->size; i++){
         if(root->keynodes[root->keys[i]]->price == price){
             prices.push_back(root->keynodes[root->keys[i]]);
-            return root;
         }
     }
     root = SearchPrice(root->children[total - 1], price);
@@ -370,23 +365,5 @@ Node* BTree::SearchPrice(Node* root, double price)
 
 Node* BTree::publicSearchPrice(double price){
     Node* node = SearchPrice(this->root, price);
-    for(int i = 0; i < node->size; i++){
-        if(node->keynodes[node->keys[i]]->price == price){
-            node = node->keynodes[node->keys[i]];
-        }
-    }
     return node;
-}
-
-int main() {
-    BTree node;
-    for(double i = 1; i < 60; i++){
-        node.Insert(i, "", "", "", "", 0);
-    }
-    node.Insert(80001, "", "seep", "", "", 0);
-    Node* lel1 = node.publicSearchName("seep");
-    Node* lel = node.HighestKey();
-    std::cout << lel1->name << endl;
-    std::cout << lel->name;
-   
 }
