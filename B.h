@@ -34,6 +34,7 @@ private:
     Node* root = nullptr;
     Node* SearchName(Node* root, string name);
     Node* SearchPrice(Node* root, double price);
+    Node* SearchDeveloper(Node* root, string dev);
 public:
     void Insert(double key, string URL, string name, string cat, string dev, double price);
     //ind is the index of the child node
@@ -41,8 +42,10 @@ public:
     Node* HighestKey();
     Node* publicSearchName(string name);
     Node* publicSearchPrice(double price);
+    Node* publicSearchDeveloper(string name);
     vector<Node*> prices;
     vector<Node*> names;
+    vector<Node*> devs;
 };
 
 void BTree::Insert(double key, string URL, string name, string cat, string dev, double price){
@@ -365,5 +368,36 @@ Node* BTree::SearchPrice(Node* root, double price)
 
 Node* BTree::publicSearchPrice(double price){
     Node* node = SearchPrice(this->root, price);
+    return node;
+}
+
+Node* BTree::SearchDeveloper(Node* root, string dev)
+{
+    if (root == nullptr)
+    {
+        return nullptr;
+    }
+
+    int total = root->size+1;
+
+    // All the children except the last
+    for (int i = 0; i < total - 1; i++)
+    {
+        SearchDeveloper(root->children[i], dev);
+    }
+
+    // Print the current node's data
+    for(int i = 0; i < root->size; i++){
+        if(root->keynodes[root->keys[i]]->name == dev){
+            devs.push_back(root->keynodes[root->keys[i]]);
+        }
+    }
+    root = SearchDeveloper(root->children[total - 1], dev);
+
+    return root;
+}
+
+Node* BTree::publicSearchDeveloper(string dev){
+    Node* node = SearchDeveloper(this->root, dev);
     return node;
 }
