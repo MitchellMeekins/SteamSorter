@@ -11,32 +11,35 @@ using namespace std;
 void setStar(string starLocation, vector<sf::Sprite>& starVect);
 void setGameImage(sf::RenderWindow& wind, string starLocation, sf::Sprite& imageSprite);
 void drawStars(RenderWindow& wind, vector<sf::Sprite> vect, int act);
-void drawText(RenderWindow& wind);
+void drawText(RenderWindow& wind, string input);
 void drawGameList(RenderWindow& wind, vector<sf::Text>& vectorPush);
 void ConfigData(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile);
-void dataProcessingLoop(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile, BTree TreeB);
+void dataProcessingLoop(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile, BTree TreeB, NaryTree TreeN);
 void drawButtons(RenderWindow& wind, sf::Color firstButton, sf::Color secondButton, sf::Color freeButton, sf::Color firstPriceButton, sf::Color secondPriceButton, sf::Color thirdPriceButton);
-vector<sf::Text> setGameList(sf::Font& fontt);
-//void setDrawURL(RenderWindow& wind);
+vector<sf::Text> setGameList(sf::Font& fontt, vector<Node*> gameVecPoint);
+
 int main()
 {
+    BTree BTree;
+    NaryTree NTree;
     sf::RenderWindow window(sf::VideoMode(1200, 700), "Steam Sorter");
-    
     vector<sf::Sprite> starVector;
-    int starRating = 3; //would calculate this for each node
+    int starRating = 0; //We calculate this for each node
     setStar("starTexture", starVector);
  
     sf::Sprite imageSprite;
+    sf::Sprite logoSprite;
+    logoSprite.setTexture(TextureManager::textureGetter("steamLogo"));
+    logoSprite.setScale(0.1, 0.1);
+    logoSprite.setPosition(485, 100);
     setGameImage(window,"amogus", imageSprite);
 
     vector<sf::Text> vectorPush;
     sf::Font font;
     font.loadFromFile("files/font/SteamFont.ttf");
-    vectorPush = setGameList(font);
-   // vector<sf::Text> gameList = setGameList();
     sf::Color backgroundColor(176,224, 230);
 
-    BTree BTree;
+    
     //NaryTree
     std::ifstream readFile("files/data/steam_data_.csv");
     string throwaway;
@@ -48,7 +51,10 @@ int main()
     string date;
     string developer;
     string price;
+    string userInput = "Search";
     
+    double selectedPrice = 0.0;
+
     std::thread dataProcessingThread(dataProcessingLoop,
         std::ref(URL),
         std::ref(name),
@@ -58,15 +64,24 @@ int main()
         std::ref(developer),
         std::ref(price),
         std::ref(readFile),
-        std::ref(BTree));
+        std::ref(BTree),
+        std::ref(NTree));
 
-    sf::Color BTreeButtonColor(100, 100, 100);
+    sf::Color BTreeButtonColor(125, 125, 125);
     sf::Color NaryButtonColor(116, 164, 170);
-    sf::Color freeButton(100, 100, 100);
-    sf::Color firstPriceButton(100, 100, 100);
-    sf::Color secondPriceButton(100, 100, 100);
-    sf::Color thirdPriceButton(100, 100, 100);
+    sf::Color freeButton(125, 125, 125);
+    sf::Color firstPriceButton(125, 125, 125);
+    sf::Color secondPriceButton(125, 125, 125);
+    sf::Color thirdPriceButton(125, 125, 125);
 
+    bool BTreeActivated = true;
+    bool showGame = false;
+    bool search = true;
+    sf::Text Speed("100.00ms",font);
+    Speed.setCharacterSize(0);
+    Speed.setStyle(sf::Text::Bold);
+    Speed.setFillColor(sf::Color::Black);
+    Speed.setPosition(0, 0);
     while (window.isOpen())
     {
         sf::Event event;
@@ -79,63 +94,199 @@ int main()
             static bool lock_click; // Create a bool variable for locking the click.
             if (event.type == sf::Event::MouseButtonPressed) //Mouse button Pressed
             {
-                if (event.mouseButton.button == sf::Mouse::Left && lock_click != true) //specifies
+                if (event.mouseButton.button == sf::Mouse::Left && lock_click != true)
                 {
+                    userInput = "Search";
+                    search = true;
                     sf::Vector2i mouse_position_leftClick = sf::Mouse::getPosition(window);
-                    cout << "Mouse x: "<< mouse_position_leftClick.x << endl;
-                    cout << "Mouse x: " << (mouse_position_leftClick.x >= (790) && mouse_position_leftClick.x < (965)) << endl;
-                    cout << "Mouse y: " << mouse_position_leftClick.y << endl;
-                    cout << "Mouse y: " << (mouse_position_leftClick.y >= (100) && mouse_position_leftClick.y < (155)) << endl;
                     if (mouse_position_leftClick.x >=  (850-135) && mouse_position_leftClick.x < (850)+120)
                     {
                         if (mouse_position_leftClick.y >= (650) && mouse_position_leftClick.y < (680))
                         {
-                            cout << "Game URL Clicked" << endl;
-                            ShellExecuteA(0, NULL, "http://www.google.com", NULL, NULL, 10);
+                            //cout << "Game URL Clicked" << endl;
+                            ShellExecuteA(0, NULL, "https://store.steampowered.com/app/945360/Among_Us/?snr=1_7_7_230_150_1", NULL, NULL, 10);
                         }
                     }
                     if (mouse_position_leftClick.x >= (790) && mouse_position_leftClick.x < (965))
                     {
                         if (mouse_position_leftClick.y >= (100) && mouse_position_leftClick.y < (155))
                         {
-                            BTreeButtonColor = sf::Color(100, 100, 100);
+                            starRating = 0;
+                            BTreeActivated = true;
+                            vectorPush.clear();
+                            showGame = false;
+                            Speed.setCharacterSize(0);
+                            Speed.setPosition(0, 0);
+                            freeButton = sf::Color(125, 125, 125);
+                            firstPriceButton = sf::Color(125, 125, 125);
+                            secondPriceButton = sf::Color(125, 125, 125);
+                            thirdPriceButton = sf::Color(125, 125, 125);
+                            BTreeButtonColor = sf::Color(125, 125, 125);
                             NaryButtonColor = sf::Color(116, 164, 170);
                         }
                         else if (mouse_position_leftClick.y >= (160) && mouse_position_leftClick.y < (215))
                         {
-                             NaryButtonColor = sf::Color(100, 100, 100);
+                            showGame = false;
+                            BTreeActivated = false;
+                            starRating = 0;
+                            vectorPush.clear();
+                            Speed.setCharacterSize(0);
+                            Speed.setPosition(0, 0);
+                            freeButton = sf::Color(125, 125, 125);
+                            firstPriceButton = sf::Color(125, 125, 125);
+                            secondPriceButton = sf::Color(125, 125, 125);
+                            thirdPriceButton = sf::Color(125, 125, 125);
+                             NaryButtonColor = sf::Color(125, 125, 125);
                              BTreeButtonColor = sf::Color(116, 164, 170);
                         }
                     }
                     if (mouse_position_leftClick.y >= (135) && mouse_position_leftClick.y < (185))
                     {
+                        freeButton = sf::Color(125, 125, 125);
+                        firstPriceButton = sf::Color(125, 125, 125);
+                        secondPriceButton = sf::Color(125, 125, 125);
+                        thirdPriceButton = sf::Color(125, 125, 125);
+                        Speed.setCharacterSize(0);
+                        Speed.setPosition(0, 0);
+                        vectorPush.clear();
+                        showGame = false;
+                        starRating = 0;
+
+                        window.clear(backgroundColor);
+                        drawButtons(window, BTreeButtonColor, NaryButtonColor, freeButton, firstPriceButton, secondPriceButton, thirdPriceButton);
+                        drawStars(window, starVector, starRating);
+                        drawText(window, userInput);
+                        if (showGame)
+                        {
+                            window.draw(imageSprite);
+                        }
+                        drawGameList(window, vectorPush);
+                        window.draw(Speed);
+                        window.display();
+
                         if (mouse_position_leftClick.x >= (20) && mouse_position_leftClick.x < (95))
                         {
-                            freeButton = sf::Color(116, 164, 170);
-                            firstPriceButton = sf::Color(100, 100, 100);
-                            secondPriceButton = sf::Color(100, 100, 100);
-                            thirdPriceButton = sf::Color(100, 100, 100);
+                            if (BTreeActivated)
+                            {
+                                Speed.setCharacterSize(35);
+                                Speed.setPosition(1000, 100);
+                            }
+                            if (!BTreeActivated)
+                            {
+                                Speed.setCharacterSize(35);
+                                Speed.setPosition(1000, 160);
+                            }
+                            selectedPrice = 0.0;
+                            setGameImage(window, "csgo", imageSprite);
+                            showGame = true;
+
+
                         }
                         if (mouse_position_leftClick.x >= (95) && mouse_position_leftClick.x < (170))
                         {
-                            freeButton = sf::Color(100, 100, 100);
-                            firstPriceButton = sf::Color(116, 164, 170);
-                            secondPriceButton = sf::Color(100, 100, 100);
-                            thirdPriceButton = sf::Color(100, 100, 100);
+
+                            freeButton = sf::Color(125, 125, 125);
+                            firstPriceButton = sf::Color(125, 125, 125);
+                            secondPriceButton = sf::Color(125, 125, 125);
+                            thirdPriceButton = sf::Color(125, 125, 125);
+                            Speed.setCharacterSize(0);
+                            Speed.setPosition(0, 0);
+                            vectorPush.clear();
+                            showGame = false;
+                            starRating = 0;
+
+                            window.clear(backgroundColor);
+                            drawButtons(window, BTreeButtonColor, NaryButtonColor, freeButton, firstPriceButton, secondPriceButton, thirdPriceButton);
+                            drawStars(window, starVector, starRating);
+                            drawText(window, userInput);
+                            if (showGame)
+                            {
+                                window.draw(imageSprite);
+                            }
+                            drawGameList(window, vectorPush);
+                            window.draw(Speed);
+                            window.display();
+
+                            if (BTreeActivated)
+                            {
+                                Speed.setCharacterSize(35);
+                                Speed.setPosition(1000, 100);
+                            }
+                            if (!BTreeActivated)
+                            
+                                Speed.setCharacterSize(35);
+                                Speed.setPosition(1000, 160);
+                            
                         }
                         if (mouse_position_leftClick.x >= (170) && mouse_position_leftClick.x < (245))
                         {
-                            freeButton = sf::Color(100, 100, 100);
-                            firstPriceButton = sf::Color(100, 100, 100);
-                            secondPriceButton = sf::Color(116, 164, 170);
-                            thirdPriceButton = sf::Color(100, 100, 100);
+                            freeButton = sf::Color(125, 125, 125);
+                            firstPriceButton = sf::Color(125, 125, 125);
+                            secondPriceButton = sf::Color(125, 125, 125);
+                            thirdPriceButton = sf::Color(125, 125, 125);
+                            Speed.setCharacterSize(0);
+                            Speed.setPosition(0, 0);
+                            vectorPush.clear();
+                            showGame = false;
+                            starRating = 0;
+
+                            window.clear(backgroundColor);
+                            drawButtons(window, BTreeButtonColor, NaryButtonColor, freeButton, firstPriceButton, secondPriceButton, thirdPriceButton);
+                            drawStars(window, starVector, starRating);
+                            drawText(window, userInput);
+                            if (showGame)
+                            {
+                                window.draw(imageSprite);
+                            }
+                            drawGameList(window, vectorPush);
+                            window.draw(Speed);
+                            window.display();
+                            if (BTreeActivated)
+                            {
+                                Speed.setCharacterSize(35);
+                                Speed.setPosition(1000, 100);
+                            }
+                            if (!BTreeActivated)
+                            {
+                                Speed.setCharacterSize(35);
+                                Speed.setPosition(1000, 160);
+                            }
                         }
                         if (mouse_position_leftClick.x >= (245) && mouse_position_leftClick.x < (320))
                         {
-                            freeButton = sf::Color(100, 100, 100);
-                            firstPriceButton = sf::Color(100, 100, 100);
-                            secondPriceButton = sf::Color(100, 100, 100);
-                            thirdPriceButton = sf::Color(116, 164, 170);
+
+                            freeButton = sf::Color(125, 125, 125);
+                            firstPriceButton = sf::Color(125, 125, 125);
+                            secondPriceButton = sf::Color(125, 125, 125);
+                            thirdPriceButton = sf::Color(125, 125, 125);
+                            Speed.setCharacterSize(0);
+                            Speed.setPosition(0, 0);
+                            vectorPush.clear();
+                            showGame = false;
+                            starRating = 0;
+
+                            window.clear(backgroundColor);
+                            drawButtons(window, BTreeButtonColor, NaryButtonColor, freeButton, firstPriceButton, secondPriceButton, thirdPriceButton);
+                            drawStars(window, starVector, starRating);
+                            drawText(window, userInput);
+                            if (showGame)
+                            {
+                                window.draw(imageSprite);
+                            }
+                            drawGameList(window, vectorPush);
+                            window.draw(Speed);
+                            window.display();
+
+                            if (BTreeActivated)
+                            {
+                                Speed.setCharacterSize(35);
+                                Speed.setPosition(1000, 100);
+                            }
+                            if (!BTreeActivated)
+                            {
+                                Speed.setCharacterSize(35);
+                                Speed.setPosition(1000, 160);
+                            }
                         }
                     }
                     lock_click = true; //And now, after all your code, this will lock the loop and not print "lmb" in a x held time. 
@@ -150,15 +301,95 @@ int main()
                     lock_click = false; //unlock when the button has been released.
                 }
             } //Released 
+            if (event.type == sf::Event::TextEntered && !(sf::Keyboard::isKeyPressed(sf::Keyboard::Enter)))
+            {
+                if (userInput.length() <= 0)
+                {
+                    userInput = "Search";
+                    search = true;
+                }
+                else
+                {
+                    if (search)
+                    {
+                        userInput = "";
+                    }
+                    search = false;
+                    userInput += static_cast<char>(event.text.unicode);
+                }
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Backspace))
+            {
+                if (userInput != "Search")
+                {
+                if (userInput.length() <= 0)
+                {
+                    userInput = "Search";
+                }
+                else
+                {
+                        userInput = userInput.substr(0, userInput.length() - 1);
+                    }
+                }
+            }
+            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Enter))
+            {
+                if (userInput == "Valve")
+                {
+                    starRating = 0;
+                    showGame = false;
+                    Speed.setCharacterSize(0);
+                    Speed.setPosition(0, 0);
+                    freeButton = sf::Color(125, 125, 125);
+                    firstPriceButton = sf::Color(125, 125, 125);
+                    secondPriceButton = sf::Color(125, 125, 125);
+                    thirdPriceButton = sf::Color(125, 125, 125);
+                    vectorPush.clear();
+                    if (BTreeActivated)
+                    {
+                        Speed.setCharacterSize(35);
+                        Speed.setPosition(1000, 100);
+                    }
+                    if (!BTreeActivated)
+                    {
+                        Speed.setCharacterSize(35);
+                        Speed.setPosition(1000, 160);
+                    }
+                }
+                if (userInput == "Ubisoft")
+                {
+                    if (BTreeActivated)
+                    {
+                        Speed.setCharacterSize(35);
+                        Speed.setPosition(1000, 100);
+                    }
+                    if (!BTreeActivated)
+                    {
+                        Speed.setCharacterSize(35);
+                        Speed.setPosition(1000, 160);
+                    }
+                    showGame = true;
+                    setGameImage(window, "siege", imageSprite);
+                    freeButton = sf::Color(125, 125, 125);
+                    firstPriceButton = sf::Color(125, 125, 125);
+                    secondPriceButton = sf::Color(125, 125, 125);
+                    thirdPriceButton = sf::Color(125, 125, 125);
+                    vectorPush.clear();
+                }
+            }
         }
 
         window.clear(backgroundColor);
         drawButtons(window, BTreeButtonColor, NaryButtonColor, freeButton, firstPriceButton, secondPriceButton, thirdPriceButton);
         drawStars(window, starVector, starRating);
-        drawText(window);
-        window.draw(imageSprite);
-        //window.draw(gameList[0]);
+        drawText(window, userInput);
+        if (showGame)
+        {
+            window.draw(imageSprite);
+        }
         drawGameList(window, vectorPush);
+        window.draw(Speed);
+        window.draw(logoSprite);
         window.display();
     }
     TextureManager::Clear();
@@ -176,7 +407,6 @@ void setStar(string starLocation, vector<sf::Sprite>& starVect)
         star.setPosition(850+(50*i), 350);
         starVect.push_back(star);
     }
-   
 }
 
 void setGameImage(sf::RenderWindow& wind,string starLocation, sf::Sprite& imageSprite)
@@ -187,35 +417,19 @@ void setGameImage(sf::RenderWindow& wind,string starLocation, sf::Sprite& imageS
     imageSprite.setPosition(850+(50*2), 300 + (imageSprite.getLocalBounds().height));
 }
 
-/*void setDrawURL(RenderWindow& wind)
-{
-    ///*This isn't the most efficient implementation, as it redeclares the font and text each time it is drawn. If there are performance issues
-    //can easily revert.
-    sf::Font font;
-    font.loadFromFile("files/font/SteamFont.ttf");
-
-    sf::Text URL("https://store.steampowered.com/app/945360/Among_Us/?snr=1_7_7_230_150_1", font);
-    URL.setFillColor(sf::Color::Black);
-    URL.setPosition(850 - (URL.getLocalBounds().width) - 25, 650);
-    URL.setCharacterSize(20);
-    wind.draw(URL);
-}*/
-
 void drawStars(RenderWindow& wind, vector<sf::Sprite> vect, int act)
 {
     for (unsigned int i = 0; i < act; i++)
     {
             wind.draw(vect[i]);
-        
     }
 }
 
-void drawText(RenderWindow& wind)
+void drawText(RenderWindow& wind, string input)
 {
     // Declare and load a font
     sf::Font font;
     font.loadFromFile("files/font/SteamFont.ttf");
-
     // Create a text
     sf::Text Rating("Rating:", font);
     Rating.setCharacterSize(35);
@@ -225,10 +439,10 @@ void drawText(RenderWindow& wind)
     // Draw it
 
     sf::Text searchCri("Search Criteria:", font);
-    searchCri.setCharacterSize(35);
+    searchCri.setCharacterSize(32);
     searchCri.setStyle(sf::Text::Bold);
     searchCri.setFillColor(sf::Color::Black);
-    searchCri.setPosition(0, 0);
+    searchCri.setPosition(5, 30);
 
     sf::Text URL_Text("Game Store Page", font);
     URL_Text.setCharacterSize(30);
@@ -243,7 +457,7 @@ void drawText(RenderWindow& wind)
     Price.setPosition(20, 90);
 
     sf::Text Developer("Developer:", font);
-    Developer.setCharacterSize(32);
+    Developer.setCharacterSize(35);
     Developer.setStyle(sf::Text::Bold);
     Developer.setFillColor(sf::Color::Black);
     Developer.setPosition(20, 215);
@@ -272,11 +486,36 @@ void drawText(RenderWindow& wind)
     FreeText.setFillColor(sf::Color::Black);
     FreeText.setPosition(25, 140);
 
-    sf::Text Less5Text("$5", font);
+    sf::Text Less5Text("$10", font);
     Less5Text.setCharacterSize(28);
     Less5Text.setStyle(sf::Text::Bold);
     Less5Text.setFillColor(sf::Color::Black);
     Less5Text.setPosition(100, 140);
+
+    sf::Text LessNextText("$20", font);
+    LessNextText.setCharacterSize(28);
+    LessNextText.setStyle(sf::Text::Bold);
+    LessNextText.setFillColor(sf::Color::Black);
+    LessNextText.setPosition(178, 140);
+
+    sf::Text bruh("$20+", font);
+    bruh.setCharacterSize(28);
+    bruh.setStyle(sf::Text::Bold);
+    bruh.setFillColor(sf::Color::Black);
+    bruh.setPosition(252, 140);
+
+    sf::Text steamSort("Steam Sorter", font);
+    steamSort.setCharacterSize(50);
+    steamSort.setStyle(sf::Text::Bold);
+    steamSort.setFillColor(sf::Color::Black);
+    steamSort.setPosition(420, 20);
+
+
+    sf::Text userIn(input, font);
+    userIn.setCharacterSize(28);
+    userIn.setStyle(sf::Text::Bold);
+    userIn.setFillColor(sf::Color::Black);
+    userIn.setPosition(25, 270);
 
     wind.draw(searchCri);
     wind.draw(Rating);
@@ -287,6 +526,10 @@ void drawText(RenderWindow& wind)
     wind.draw(Less5Text);
     wind.draw(BTreeText);
     wind.draw(NaryText);
+    wind.draw(LessNextText);
+    wind.draw(bruh);
+    wind.draw(userIn);
+    wind.draw(steamSort);
 }
 
 void drawGameList(RenderWindow& wind, vector<sf::Text>& vect)
@@ -295,7 +538,6 @@ void drawGameList(RenderWindow& wind, vector<sf::Text>& vect)
     {
         wind.draw(vect[i]);
     }
-    
 }
 
 void ConfigData(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile)
@@ -359,40 +601,35 @@ void ConfigData(string& _URL, string& name, string& _image_url, string& _allRevi
 
 }
 
-vector<sf::Text> setGameList(sf::Font& fontt)
+vector<sf::Text> setGameList(sf::Font& fontt, vector<Node*> gameVecPoint)
 {
     vector<sf::Text> vectorPush;
     sf::Text Game;
     for (unsigned int i = 0; i < 5; i++)
     {
         Game.setFont(fontt);
-        Game.setString((to_string(i+1)+ ". GAME_" + to_string(i+1)));
-        Game.setCharacterSize(35);
-        Game.setStyle(sf::Text::Bold);
-        Game.setFillColor(sf::Color::Black);
-        Game.setPosition(50, 400+(45*i));
-        vectorPush.push_back(Game);
+        if (gameVecPoint.size() != 0)
+        {
+            Game.setString((to_string(i + 1) + gameVecPoint[i]->name));
+
+            Game.setCharacterSize(35);
+            Game.setStyle(sf::Text::Bold);
+            Game.setFillColor(sf::Color::Black);
+            Game.setPosition(50, 400 + (45 * i));
+            vectorPush.push_back(Game);
+        }
     }
-    
     return vectorPush;
 }
 
-void dataProcessingLoop(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile, BTree TreeB) 
+void dataProcessingLoop(string& _URL, string& name, string& _image_url, string& _allReviews, string& date, string& developer, string& _price, std::ifstream& readFile, BTree TreeB, NaryTree TreeN)
 {
     for (unsigned int i = 0; i < 50; i++) {
         // Assuming you have the necessary variables and functions declared
         ConfigData(_URL, name, _image_url, _allReviews, date, developer, _price, readFile);
         TreeB.Insert(stod(_allReviews), _image_url, name, date, developer, stod(_price));
-        cout << _URL << endl;
-        cout << name << endl;
-        cout << _image_url << endl;
-        cout << _allReviews << endl;
-        cout << date << endl;
-        cout << developer << endl;
-        cout << _price << endl;
-        cout << endl;
+        TreeN.insert(stod(_allReviews), _image_url, name, date, developer, stod(_price));
     }
-    cout << "Completed" << endl;
 }
 
 void drawButtons(RenderWindow& wind, sf::Color firstButton, sf::Color secondButton, sf::Color freeButton, sf::Color firstPriceButton, sf::Color secondPriceButton, sf::Color thirdPriceButton)
@@ -433,6 +670,11 @@ void drawButtons(RenderWindow& wind, sf::Color firstButton, sf::Color secondButt
     rectangleNext.setPosition(170.f, 135.f);
     rectangleNext.setFillColor(sf::Color(secondPriceButton));
 
+    sf::RectangleShape rectangleSearch;
+    rectangleSearch.setSize(sf::Vector2f(350.f, 60.f));
+    rectangleSearch.setPosition(25.f, 270.f);
+    rectangleSearch.setFillColor(sf::Color(220,220,220));
+
     sf::RectangleShape rectangleNextN;
     rectangleNextN.setSize(sf::Vector2f(75.f, 50.f));
     rectangleNextN.setPosition(245.f, 135.f);
@@ -461,6 +703,6 @@ void drawButtons(RenderWindow& wind, sf::Color firstButton, sf::Color secondButt
     wind.draw(firstVertBar);
     wind.draw(secondVertBar);
     wind.draw(thirdVertBar);
-
+    wind.draw(rectangleSearch);
 
 }
