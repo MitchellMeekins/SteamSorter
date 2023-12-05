@@ -254,7 +254,7 @@ int main()
                         }
                         if (mouse_position_leftClick.x >= (245) && mouse_position_leftClick.x < (320))
                         {
-
+                            //Resets the buttons when clicked
                             freeButton = sf::Color(125, 125, 125);
                             firstPriceButton = sf::Color(125, 125, 125);
                             secondPriceButton = sf::Color(125, 125, 125);
@@ -443,7 +443,7 @@ void drawText(RenderWindow& wind, string input)
     searchCri.setStyle(sf::Text::Bold);
     searchCri.setFillColor(sf::Color::Black);
     searchCri.setPosition(5, 30);
-
+    //Delcares text for URL
     sf::Text URL_Text("Game Store Page", font);
     URL_Text.setCharacterSize(30);
     URL_Text.setStyle(sf::Text::Bold);
@@ -605,6 +605,7 @@ vector<sf::Text> setGameList(sf::Font& fontt, vector<Node*> gameVecPoint)
 {
     vector<sf::Text> vectorPush;
     sf::Text Game;
+    //This sets the game list
     for (unsigned int i = 0; i < 5; i++)
     {
         Game.setFont(fontt);
@@ -659,35 +660,41 @@ void drawButtons(RenderWindow& wind, sf::Color firstButton, sf::Color secondButt
     rectangleFree.setSize(sf::Vector2f(75.f, 50.f));
     rectangleFree.setPosition(20.f, 135.f);
     rectangleFree.setFillColor(sf::Color(freeButton));
-
+    //Creates rectangle for the free button
     sf::RectangleShape rectangleFiveLess;
     rectangleFiveLess.setSize(sf::Vector2f(75.f, 50.f));
     rectangleFiveLess.setPosition(95.f, 135.f);
     rectangleFiveLess.setFillColor(sf::Color(firstPriceButton));
 
+    //Creates rectangle for the $10 button
     sf::RectangleShape rectangleNext;
     rectangleNext.setSize(sf::Vector2f(75.f, 50.f));
     rectangleNext.setPosition(170.f, 135.f);
     rectangleNext.setFillColor(sf::Color(secondPriceButton));
 
+    //Creates rectangle for the search button
     sf::RectangleShape rectangleSearch;
     rectangleSearch.setSize(sf::Vector2f(350.f, 60.f));
     rectangleSearch.setPosition(25.f, 270.f);
     rectangleSearch.setFillColor(sf::Color(220,220,220));
 
+    //Creates rectangle for the $20 button
     sf::RectangleShape rectangleNextN;
     rectangleNextN.setSize(sf::Vector2f(75.f, 50.f));
     rectangleNextN.setPosition(245.f, 135.f);
     rectangleNextN.setFillColor(sf::Color(thirdPriceButton));
 
+    //Delimiter for price buttons
     sf::RectangleShape firstVertBar;
     firstVertBar.setSize(sf::Vector2f(3.f, 50.f));
     firstVertBar.setPosition(95.f, 135.f);
     firstVertBar.setFillColor(sf::Color::White);
+    //Delimiter for price buttons
     sf::RectangleShape secondVertBar;
     secondVertBar.setSize(sf::Vector2f(3.f, 50.f));
     secondVertBar.setPosition(170.f, 135.f);
     secondVertBar.setFillColor(sf::Color::White);
+    //Delimiter for price buttons
     sf::RectangleShape thirdVertBar;
     thirdVertBar.setSize(sf::Vector2f(3.f, 50.f));
     thirdVertBar.setPosition(245.f, 135.f);
