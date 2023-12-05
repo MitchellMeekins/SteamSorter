@@ -16,7 +16,6 @@ struct Node{
     double price;
     
     Node(string URL, string name, string cat, string dev, double price){
-        /* add other constuctor information later */
         ifLeaf = true;
         size = 0;
         this->URL = URL;
@@ -63,7 +62,6 @@ void BTree::Insert(double key, string URL, string name, string cat, string dev, 
         newroot->keys[0] = root->keys[2];
         newroot->keynodes.insert({root->keys[2], root->keynodes[root->keys[2]]});
         newroot->size = 1;
-        //did all this manually sorry (:/ I was too lazy to code actual logic, if u can think of smth better pls fix this lol
         //keys on left of middle key get added to first new child, and keys on right of middle key get add to second middle child. These new children get added to the new root nodes children array. the children of the root node get readded to the respective new children node children arrays. Also dont forget to fix the ifLeaf variables and to set root as new root
         Node* child1 = root->children[0];
         Node* child2 = root->children[1];
@@ -90,7 +88,6 @@ void BTree::Insert(double key, string URL, string name, string cat, string dev, 
         newchild2->children[0] = child4;
         newchild2->children[1] = child5;
         newchild2->children[2] = child6;
-        //for(int i = 0; i < newchild1->size+1)
         for(int i = 0; i < root->size+1; i++){
             if(root->children[i] != nullptr){
                 newchild1->ifLeaf = false;
